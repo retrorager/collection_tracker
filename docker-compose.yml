@@ -1,0 +1,49 @@
+version: '3.8'
+services:
+  pg:
+    container_name: pg_container
+    image: postgres:13.2-alpine
+    restart: always
+    environment:
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: admin123
+        POSTGRES_DB: create_db
+        POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+        - "5432:5432"
+    volumes:
+        - ./data:/data
+        - ./data/misc/django_init.sql:/docker-entrypoint-initdb.d/1-django-init.sql
+  pgadmin:
+      container_name: pgadmin_container
+      image: dpage/pgadmin4:5.2
+      restart: always
+      volumes:
+      - postgres_data:/data/postgres_data
+      environment:
+          PGADMIN_DEFAULT_EMAIL: admin@example.com
+          PGADMIN_DEFAULT_PASSWORD: admin123
+          PGADMIN_LISTEN_PORT: 5433
+          PGADMIN_CONFIG_SERVER_MODE: "False"
+          PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+      ports:
+          - "5433:5433"
+      depends_on:
+          - pg
+  web:
+    build: ./services/web
+    command: python manage.py run -h 0.0.0.0
+    volumes:
+      - ./services/web/:/usr/src/app/
+    ports:
+      - 5001:5000
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - pg
+volumes:
+  postgres_data:
+
+  # https://testdriven.io/blog/dockerizing-flask-with-postgres-gunicorn-and-nginx/
+  #docker-compose exec web python manage.py create_db
+  #docker-compose exec pg psql --username=postgres --dbname=create_db
