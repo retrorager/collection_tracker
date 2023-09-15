@@ -1,5 +1,5 @@
 Collection Tracker
-This program uses Python and a Postgres database to store information on users, their collections and items within those collections.
+This program uses Python and a PostgreSQL database to store information on users, their collections and items within those collections.
 
 USERS
 Method
